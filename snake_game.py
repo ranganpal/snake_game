@@ -24,7 +24,7 @@ class Food:
 class Snake:
     def __init__(self):
         self.__snake = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
-        self.__direction = Vector2(0, 0)
+        self.__direction = Vector2(1, 0)
         self.__grow = False
 
         self.__head_up = pygame.image.load('Graphics/head_up.png').convert_alpha()
@@ -46,11 +46,11 @@ class Snake:
         self.__body_br = pygame.image.load('Graphics/body_br.png').convert_alpha()
         self.__crunch_sound = pygame.mixer.Sound('Sound/crunch.wav')
 
-    def head_pos(self):
+    def head(self):
         return self.__snake[0]
     
     def body(self):
-        return self.__snake
+        return self.__snake[1:]
     
     def direction(self):
         return self.__direction
@@ -161,21 +161,20 @@ class Main:
         self.check_fail()
 
     def check_collision(self):
-        if self.food.pos() == self.snake.head_pos():
+        if self.food.pos() == self.snake.head():
             self.snake.sneck_munch()
             self.snake.grow_snake()
             self.food.create_food()
 
     def check_fail(self):
-        head = self.snake.head_pos()
-        in_x_range = 0 <= head.x <= cell_num - 1
-        in_y_range = 0 <= head.y <= cell_num - 1
+        snake_head = self.snake.head()
+        in_x_range = 0 <= snake_head.x <= cell_num - 1
+        in_y_range = 0 <= snake_head.y <= cell_num - 1
         if not in_x_range or not in_y_range:
             self.game_over()
 
-        snake = self.snake.body()
-        for block in snake[1:]:
-            if block == snake[0]:
+        for block in self.snake.body():
+            if block == self.snake.head():
                 self.game_over()
 
     def game_over():
