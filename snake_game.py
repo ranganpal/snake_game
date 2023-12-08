@@ -161,9 +161,9 @@ class Main:
     def draw_score(self):
         score_text = str(len(self.__snake.body()) - 2)
         score_surface = score_font.render(score_text, True, (56, 74, 12))
-        score_x = cell_size * cell_num - 60
-        score_y = cell_size * cell_num - 40
-        score_rect = score_surface.get_rect(center = (score_x, score_y))
+        score_x = cell_size * cell_num - 40
+        score_y = cell_size * cell_num - 30
+        score_rect = score_surface.get_rect(bottomright = (score_x, score_y))
 
         apple_surface = pygame.image.load('Graphics/apple.png').convert_alpha()
         apple_rect = apple_surface.get_rect(midright = score_rect.midleft)
