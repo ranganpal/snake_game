@@ -4,7 +4,7 @@ from pygame.math import Vector2
 class Food:
     def __init__(self):
         self.create_food()
-        self.apple = pygame.image.load('Graphics/apple.png').convert_alpha()
+        self.__apple = pygame.image.load('Graphics/apple.png').convert_alpha()
     
     def create_food(self):
         self.__x_food = random.randint(0, cell_num - 1)
@@ -19,7 +19,7 @@ class Food:
         y_pos = self.__pos.y * cell_size
         weidth = height = cell_size
         food_rect = pygame.Rect(x_pos, y_pos, weidth, height)
-        screen.blit(self.apple, food_rect)
+        screen.blit(self.__apple, food_rect)
 
 class Snake:
     def __init__(self):
