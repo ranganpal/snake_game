@@ -24,7 +24,7 @@ class Food:
 class Snake:
     def __init__(self):
         self.__snake = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
-        self.__direction = Vector2(1, 0)
+        self.__direction = Vector2(0, 0)
         self.__grow = False
 
         self.__head_up = pygame.image.load('Graphics/head_up.png').convert_alpha()
@@ -92,7 +92,6 @@ class Snake:
         elif btm_left  : self.__body_block = self.__body_bl
         elif btm_right : self.__body_block = self.__body_br
 
-
     def draw_snake(self):
         for index, block in enumerate(self.__snake):
             x_pos = block.x * cell_size
@@ -109,7 +108,6 @@ class Snake:
             else:
                 self.update_body_block(index, block)
                 screen.blit(self.__body_block, block_rect)
-
 
     def move_snake(self):
         if self.__grow: 
@@ -131,10 +129,20 @@ class Snake:
     def grow_snake(self):
         self.__grow = True
 
+    def reset_snake(self):
+        self.__snake = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
+        self.__direction = Vector2(0, 0)
+
 class Main:
     def __init__(self):
-        self.food = Food()
-        self.snake = Snake()
+        self.__food = Food()
+        self.__snake = Snake()
+
+    def control_snake(self, event):
+        if event.key == pygame.K_UP    : self.__snake.change_direction(0,-1)
+        if event.key == pygame.K_DOWN  : self.__snake.change_direction(0, 1)
+        if event.key == pygame.K_LEFT  : self.__snake.change_direction(-1,0)
+        if event.key == pygame.K_RIGHT : self.__snake.change_direction(1, 0)
 
     def create_grass(self, row, col):
         grass_color = (167, 209, 61)
@@ -150,36 +158,63 @@ class Main:
                 if row % 2 == 0 and col % 2 == 0: self.create_grass(row, col)
                 if row % 2 != 0 and col % 2 != 0: self.create_grass(row, col)
 
+    def draw_score(self):
+        score_text = str(len(self.__snake.body()) - 2)
+        score_surface = score_font.render(score_text, True, (56, 74, 12))
+        score_x = cell_size * cell_num - 60
+        score_y = cell_size * cell_num - 40
+        score_rect = score_surface.get_rect(center = (score_x, score_y))
+
+        apple_surface = pygame.image.load('Graphics/apple.png').convert_alpha()
+        apple_rect = apple_surface.get_rect(midright = score_rect.midleft)
+
+        bg_x = apple_rect.left
+        bg_y = apple_rect.top
+        weidth = apple_rect.width + score_rect.width + 6
+        height = apple_rect.height
+        bg_rect = pygame.Rect(bg_x, bg_y, weidth, height)
+
+        pygame.draw.rect(screen, (167, 209, 61), bg_rect)
+        pygame.draw.rect(screen, (56, 74, 12), bg_rect, 2)
+        screen.blit(apple_surface, apple_rect)
+        screen.blit(score_surface, score_rect)
+
     def draw_elements(self):
         self.draw_grass()
-        self.food.draw_food()
-        self.snake.draw_snake()
+        self.__food.draw_food()
+        self.__snake.draw_snake()
+        self.draw_score()
 
-    def update(self):
-        self.snake.move_snake()
+    def update_snake_pos(self):
+        self.__snake.move_snake()
         self.check_collision()
         self.check_fail()
 
     def check_collision(self):
-        if self.food.pos() == self.snake.head():
-            self.snake.sneck_munch()
-            self.snake.grow_snake()
-            self.food.create_food()
+        if self.__food.pos() == self.__snake.head():
+            self.__snake.sneck_munch()
+            self.__snake.grow_snake()
+            self.__food.create_food()
+
+        for block in self.__snake.body():
+            while self.__food.pos() == block:
+                self.__food.create_food()
 
     def check_fail(self):
-        snake_head = self.snake.head()
+        snake_head = self.__snake.head()
         in_x_range = 0 <= snake_head.x <= cell_num - 1
         in_y_range = 0 <= snake_head.y <= cell_num - 1
+
         if not in_x_range or not in_y_range:
             self.game_over()
 
-        for block in self.snake.body():
-            if block == self.snake.head():
+        for block in self.__snake.body():
+            if block == self.__snake.head():
                 self.game_over()
 
-    def game_over():
-        pygame.quit()
-        sys.exit()
+    def game_over(self):
+        self.__snake.reset_snake()
+
 
 
 pygame.init()
@@ -189,7 +224,7 @@ cell_num = 25
 background_color = (175, 215, 70)
 screen = pygame.display.set_mode((cell_size * cell_num, cell_size * cell_num))
 clock = pygame.time.Clock()
-
+score_font = pygame.font.Font('Font\PoetsenOne-Regular.ttf', 25)
 main_game = Main()
 
 SCREEN_UPDATE = pygame.USEREVENT
@@ -202,19 +237,10 @@ while running:
             running = False
 
         if event.type == SCREEN_UPDATE:
-            main_game.update()
+            main_game.update_snake_pos()
 
         if event.type == pygame.KEYDOWN:
-            
-            if event.key == pygame.K_UP:
-                main_game.snake.change_direction(0, -1)
-            if event.key == pygame.K_DOWN:
-                main_game.snake.change_direction(0, 1)
-            if event.key == pygame.K_LEFT:
-                main_game.snake.change_direction(-1, 0)
-            if event.key == pygame.K_RIGHT:
-                main_game.snake.change_direction(1, 0)
-
+            main_game.control_snake(event)
     
     screen.fill(background_color)
     main_game.draw_elements()
