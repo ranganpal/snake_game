@@ -1,4 +1,4 @@
-import pygame, sys, random, time
+import pygame, sys, random
 from pygame.math import Vector2
 
 class Food:
