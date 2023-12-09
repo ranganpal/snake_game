@@ -149,11 +149,18 @@ class Main:
         self.__score_font = pygame.font.Font('Font\PoetsenOne-Regular.ttf', 25)
 
     def control_snake(self, event):
-        if event.key == pygame.K_UP    : self.__snake.change_direction(0,-1)
-        if event.key == pygame.K_DOWN  : self.__snake.change_direction(0, 1)
-        if event.key == pygame.K_LEFT  : self.__snake.change_direction(-1,0)
-        if event.key == pygame.K_RIGHT : self.__snake.change_direction(1, 0)
-        self.__snake.play_turn_sound()
+        if event.key == pygame.K_UP: 
+            self.__snake.play_turn_sound()
+            self.__snake.change_direction(0,-1)
+        if event.key == pygame.K_DOWN: 
+            self.__snake.play_turn_sound()
+            self.__snake.change_direction(0, 1)
+        if event.key == pygame.K_LEFT: 
+            self.__snake.play_turn_sound()
+            self.__snake.change_direction(-1,0)
+        if event.key == pygame.K_RIGHT: 
+            self.__snake.play_turn_sound()
+            self.__snake.change_direction(1, 0)
 
     def create_grass1(self, row, col):
         grass_color = (167, 209, 61)
