@@ -44,9 +44,9 @@ class Snake:
         self.__body_bl = pygame.image.load('Graphics/body_bl.png').convert_alpha()
         self.__body_br = pygame.image.load('Graphics/body_br.png').convert_alpha()
 
-        self.__point_gain_sound = pygame.mixer.Sound('Sound/point_gain.wav')
-        self.__turn_snake_sound = pygame.mixer.Sound('Sound/turn_snake.wav')
-        self.__game_over_sound = pygame.mixer.Sound('Sound/game_over.wav')
+        self.__point_gain_sound = pygame.mixer.Sound('Sounds/point_gain.wav')
+        self.__turn_snake_sound = pygame.mixer.Sound('Sounds/turn_snake.wav')
+        self.__game_over_sound = pygame.mixer.Sound('Sounds/game_over.wav')
 
     def create_snake(self):
         self.__snake = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
