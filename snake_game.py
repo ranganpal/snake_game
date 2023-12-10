@@ -49,14 +49,14 @@ class Snake:
         self.__game_over_sound = pygame.mixer.Sound('Sounds/game_over.wav')
 
     def create_snake(self):
-        self.__snake = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
+        self.__blocks = [Vector2(5, 4), Vector2(4, 4), Vector2(3, 4)]
         self.__direction = Vector2(1, 0)
 
     def head(self):
-        return self.__snake[0]
+        return self.__blocks[0]
     
     def body(self):
-        return self.__snake[1:]
+        return self.__blocks[1:]
     
     def direction(self):
         return self.__direction
@@ -71,22 +71,22 @@ class Snake:
         self.__game_over_sound.play()
     
     def update_head_block(self):
-        head_body_rtln = self.__snake[0] - self.__snake[1]
+        head_body_rtln = self.__blocks[0] - self.__blocks[1]
         if   head_body_rtln == Vector2(1, 0): self.__head_block = self.__head_right
         elif head_body_rtln == Vector2(-1,0): self.__head_block = self.__head_left
         elif head_body_rtln == Vector2(0, 1): self.__head_block = self.__head_down
         elif head_body_rtln == Vector2(0,-1): self.__head_block = self.__head_up
     
     def update_tail_block(self):
-        tail_body_rtln = self.__snake[-1] - self.__snake[-2]
+        tail_body_rtln = self.__blocks[-1] - self.__blocks[-2]
         if   tail_body_rtln == Vector2(1, 0): self.__tail_block = self.__tail_right
         elif tail_body_rtln == Vector2(-1,0): self.__tail_block = self.__tail_left
         elif tail_body_rtln == Vector2(0, 1): self.__tail_block = self.__tail_down
         elif tail_body_rtln == Vector2(0,-1): self.__tail_block = self.__tail_up
 
     def update_body_block(self, index, block):
-        prev_block_rtln = self.__snake[index - 1] - block
-        next_block_rtln = self.__snake[index + 1] - block
+        prev_block_rtln = self.__blocks[index - 1] - block
+        next_block_rtln = self.__blocks[index + 1] - block
 
         horizontal = prev_block_rtln.y == next_block_rtln.y == 0
         vertical = prev_block_rtln.x == next_block_rtln.x == 0
@@ -105,7 +105,7 @@ class Snake:
         elif btm_right : self.__body_block = self.__body_br
 
     def draw_snake(self):
-        for index, block in enumerate(self.__snake):
+        for index, block in enumerate(self.__blocks):
             x_pos = block.x * cell_size
             y_pos = block.y * cell_size
             weidth = height = cell_size
@@ -114,7 +114,7 @@ class Snake:
             if index == 0:
                 self.update_head_block()
                 screen.blit(self.__head_block, block_rect)
-            elif index == len(self.__snake) - 1:
+            elif index == len(self.__blocks) - 1:
                 self.update_tail_block()
                 screen.blit(self.__tail_block, block_rect)
             else:
@@ -123,11 +123,11 @@ class Snake:
 
     def move_snake(self):
         if self.__grow: 
-            self.__snake.insert(0, self.__snake[0] + self.__direction)
+            self.__blocks.insert(0, self.__blocks[0] + self.__direction)
             self.__grow = False
         else:
-            self.__snake.pop()
-            self.__snake.insert(0, self.__snake[0] + self.__direction)
+            self.__blocks.pop()
+            self.__blocks.insert(0, self.__blocks[0] + self.__direction)
             
     def change_direction(self, x, y):
         if self.__direction.x == 0 and y == 0: # left and right
@@ -145,10 +145,20 @@ class Main:
     def __init__(self):
         self.__food = Food()
         self.__snake = Snake()
-        self.__game_start_bg = pygame.image.load('Graphics\clicktoplay.png')
         self.__score_font = pygame.font.Font('Font\PoetsenOne-Regular.ttf', 25)
+        self.__instruction_font = pygame.font.Font('Font\PoetsenOne-Regular.ttf', 45)
+
+    def game_start(self):
+        instruction_text = "Press SPACE to Start"
+        instruction_surface = self.__instruction_font.render(instruction_text, True, (56, 74, 12))
+        x_pos = (cell_size * cell_num) / 2
+        y_pos = (cell_size * cell_num + 40) / 2
+        instruction_rect = instruction_surface.get_rect(center = (x_pos, y_pos))
+        screen.blit(instruction_surface, instruction_rect)
 
     def control_snake(self, event):
+        # if event.key == pygame.K_SPACE:
+        #     pass
         if event.key == pygame.K_UP: 
             self.__snake.play_turn_sound()
             self.__snake.change_direction(0,-1)
@@ -212,13 +222,10 @@ class Main:
         self.__food.draw_food()
         self.__snake.draw_snake()
         self.draw_score()
-        if not game_start:
-            screen.blit(self.__game_start_bg, (0, 0))
 
     def update_game_elements(self):
         self.__snake.move_snake()
         self.check_collision()
-        return self.check_fail()
 
     def check_collision(self):
         if self.__food.pos() == self.__snake.head():
@@ -230,31 +237,54 @@ class Main:
             while self.__food.pos() == block:
                 self.__food.create_food()
 
-    def check_fail(self):
+    def check_game_over(self):
         snake_head = self.__snake.head()
         in_x_range = 0 <= snake_head.x <= cell_num - 1
         in_y_range = 0 <= snake_head.y <= cell_num - 1
 
         if not in_x_range or not in_y_range:
             self.__snake.play_game_over_sound()
-            return self.game_over()
+            return True
 
-        for block in self.__snake.body():
-            if block == self.__snake.head():
+        snake_body = self.__snake.body()
+        for block in snake_body:
+            if block == snake_head:
                 self.__snake.play_game_over_sound()
-                return self.game_over()
+                return True
             
         return False
 
-    def game_over(self):
+    def game_restart(self):
+        x_pos = 0
+        y_pos = 0
+        weidth = cell_num * cell_size
+        height = cell_num * cell_size + 40
+        restart_rect = pygame.Rect(x_pos, y_pos, weidth, height)
+        pygame.draw.rect(screen, background_color , restart_rect)
+
+        score = len(self.__snake.body()) - 2
+        instruction_text1 = "GAME OVER   Score: " + str(score)
+        instruction_text2 = "Press SPACE to Restart"
+        instruction_surface1 = self.__instruction_font.render(instruction_text1, True, (56, 74, 12))
+        instruction_surface2 = self.__instruction_font.render(instruction_text2, True, (56, 74, 12))
+
+        x_pos = restart_rect.centerx
+        y_pos = restart_rect.centery
+        instruction_rect1 = instruction_surface1.get_rect(midbottom = (x_pos, y_pos))
+        instruction_rect2 = instruction_surface2.get_rect(midtop = (x_pos, y_pos))
+
+        screen.blit(instruction_surface1, instruction_rect1)
+        screen.blit(instruction_surface2, instruction_rect2)
+
+    def recreate_snake(self):
         self.__snake.create_snake()
-        return True
+
 
 
 pygame.init()
 
-cell_size = 30
-cell_num = 24
+cell_size = 40
+cell_num = 16
 background_color = (126, 159, 60)
 screen = pygame.display.set_mode((cell_size * cell_num, cell_size * cell_num + 40))
 clock = pygame.time.Clock()
@@ -264,24 +294,33 @@ SCREEN_UPDATE = pygame.USEREVENT
 pygame.time.set_timer(SCREEN_UPDATE, 150)
 
 game_start = False
+game_over = False
 running = True
 while running:
     screen.fill(background_color)
-    main_game.draw_elements()
-
+    if not game_start:
+        main_game.game_start()
+    else:
+        main_game.draw_elements()
+        if game_over:
+            main_game.game_restart()
+        
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
         if event.type == pygame.KEYDOWN:
-            if not game_start:
+            if event.key == pygame.K_SPACE:
+                if game_over:
+                    main_game.recreate_snake()
                 game_start = True
+                game_over = False
             else:
                 main_game.control_snake(event)
     
-        if game_start and event.type == SCREEN_UPDATE:
-            game_over = main_game.update_game_elements()
-            game_start = not game_over
+        if game_start and not game_over and event.type == SCREEN_UPDATE:
+            main_game.update_game_elements()
+            game_over = main_game.check_game_over()
 
     pygame.display.update()
     clock.tick(60)
