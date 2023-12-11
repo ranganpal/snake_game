@@ -146,7 +146,7 @@ class Main:
         self.__food = Food()
         self.__snake = Snake()
         self.__score_font = pygame.font.Font('Font\PoetsenOne-Regular.ttf', 25)
-        self.__instruction_font = pygame.font.Font('Font\PoetsenOne-Regular.ttf', 45)
+        self.__instruction_font = pygame.font.Font('Font\PoetsenOne-Regular.ttf', 55)
 
     def game_start(self):
         instruction_text = "Press SPACE to Start"
