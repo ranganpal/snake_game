@@ -157,8 +157,6 @@ class Main:
         screen.blit(instruction_surface, instruction_rect)
 
     def control_snake(self, event):
-        # if event.key == pygame.K_SPACE:
-        #     pass
         if event.key == pygame.K_UP: 
             self.__snake.play_turn_sound()
             self.__snake.change_direction(0,-1)
