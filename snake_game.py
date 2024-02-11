@@ -294,6 +294,7 @@ pygame.time.set_timer(SCREEN_UPDATE, 150)
 game_start = False
 game_over = False
 running = True
+
 while running:
     screen.fill(background_color)
     if not game_start:
